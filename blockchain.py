@@ -8,7 +8,7 @@ from flask import Flask, render_template, jsonify, redirect, request
 import requests
 from textwrap import dedent
 from time import time
-import db
+from db import MysqlController
 
 class Blockchain(object):  # 블록체인 클래스
     def __init__(self):  # 초기화 
@@ -34,6 +34,7 @@ class Blockchain(object):  # 블록체인 클래스
          # parsed_url = urlparse(address)# address 쉽게 표현 
          # self.nodes.add(parsed_url.netloc)  # 받은 address 넷주소 + port
         self.nodes.add(myid)
+        MysqlController.insert
         
     def new_transaction(self, sender, recipient, ssoin):
         self.current_transactions.append({
@@ -111,8 +112,8 @@ class Blockchain(object):  # 블록체인 클래스
     
     
 app = Flask(__name__)
-#mydb=MysqlController() 
 node_identifier = str(uuid4()).replace('-', '')
+MysqlController().new_node(node_identifier,0)
 blockchain = Blockchain()
 
 
@@ -163,7 +164,7 @@ def mine():
     blockchain.new_transaction(
         sender='0',
         recipient=node_identifier,
-        ssoin=1
+        ssoin= MysqlController().mining(node_identifier)
     )
 
     previous_hash = blockchain.hash(last_block)
@@ -193,20 +194,20 @@ def full_chain():
 def new_transaction():
     sender = request.form['sender']
     recipient = request.form['recipient']
-    ssoin = request.form['ssion']
+    ssoin = request.form['ssoin']
     
-    data = {
-        'sender' : sender,
-        'recipient' : recipient,
-        'ssoin': ssoin
-    }
+    #data = {
+    #    'sender' : sender,
+    #    'recipient' : recipient,
+    #    'ssoin': ssoin
+    #}
     
-    index = blockchain.new_transaction(data['sender'],
-                                       data['recipient'],
-                                       data['ssoin'])
-
+    #index = blockchain.new_transaction(data['sender'],
+    #                                   data['recipient'],
+    #                                   data['ssoin'])
+    MysqlController().trade(sender,recipient,ssoin)
     response = {'message':
-                'Transaction will be added to Block {0}'.format(index)}
+                'Transaction will be added to Block'}# {0}}.format(index)}
 
     return jsonify(response), 201
 
